@@ -1,5 +1,21 @@
 typealias Section = Pair<String, Map<String, String>>
 
+fun parseIni(fileContent: String): List<Section> {
+    val sectionRegex = Regex("""\[(.+)]""")
+    val propertyRegex = Regex("""(.+)\s*=\s*(.+)""")
+    return fileContent.lineSequence().fold(ParseResult.empty) { resultSoFar, line ->
+        if (line.isEmpty())
+            return@fold resultSoFar
+        sectionRegex.matchEntire(line)?.let {
+            val (sectionName) = it.destructured
+            resultSoFar.newSection(sectionName)
+        } ?: propertyRegex.matchEntire(line)?.let {
+            val (key, value) = it.destructured
+            resultSoFar.addProperty(key, value)
+        } ?: error("line match failed")
+    }.done()
+}
+
 private data class ParseResult(val currentSection: Section?, val sections: List<Section>) {
     fun newSection(sectionName: String): ParseResult {
         var result = this
@@ -24,21 +40,3 @@ private data class ParseResult(val currentSection: Section?, val sections: List<
         val empty = ParseResult(null, emptyList())
     }
 }
-
-fun parseIni(fileContent: String): List<Section> {
-    val sectionRegex = Regex("""\[(.+)]""")
-    val propertyRegex = Regex("""(.+)\s*=\s*(.+)""")
-    return fileContent.lineSequence().fold(ParseResult.empty) { resultSoFar, line ->
-        if (line.isEmpty())
-            return@fold resultSoFar
-        sectionRegex.matchEntire(line)?.let {
-            val (sectionName) = it.destructured
-            resultSoFar.newSection(sectionName)
-        } ?: propertyRegex.matchEntire(line)?.let {
-            val (key, value) = it.destructured
-            resultSoFar.addProperty(key, value)
-        } ?: error("line match failed")
-    }.done()
-}
-
-

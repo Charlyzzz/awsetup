@@ -3,7 +3,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
 
-object Files {
+object FileHelpers {
     private const val BACKUP_FILE_EXTENSION = ".bak"
 
     fun backup(path: Path) {

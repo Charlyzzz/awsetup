@@ -1,21 +1,34 @@
-import com.github.ajalt.clikt.core.subcommands
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
+import kotlin.io.path.Path
 
+fun getHomePath(): String {
+    return System.getenv("HOME") ?: error("\$HOME is not defined")
+}
 
-fun main(args: Array<String>) = Cli()
-    .subcommands(
-        ListProfiles(),
-        SetProfile(),
-        ImportProfiles(),
-        Remove()
-    ).main(args)
+val configFilePath = Path(getHomePath(), ".awsetup.json")
 
 @Serializable
 data class Config(
     val profiles: List<Profile>
-)
+) {
+    fun save() {
+        val configJson = Json.encodeToString(serializer(), this)
+        file.writeText(configJson)
+    }
+
+    companion object {
+        val file: File = configFilePath.toFile()
+
+        fun loadFromFile(): Config {
+            if (!file.exists()) {
+                error("config file does not exist")
+            }
+            return Json.decodeFromString(serializer(), file.readText())
+        }
+    }
+}
 
 @JvmInline
 @Serializable
@@ -39,23 +52,4 @@ data class Profile(val name: String, val key: SecretString, val secret: SecretSt
             return Profile(name, SecretString(key), SecretString(secret))
         }
     }
-}
-
-fun getConfigFile() = File(getHomePath(), ".awsetup.json")
-
-fun saveConfigFile(config: Config) {
-    val configFile = getConfigFile()
-    configFile.writeText(Json.encodeToString(Config.serializer(), config))
-}
-
-fun loadConfig(): Config {
-    val configFile = getConfigFile()
-    if (!configFile.exists()) {
-        error("config file does not exist")
-    }
-    return Json.decodeFromString(Config.serializer(), configFile.readText())
-}
-
-fun getHomePath(): String {
-    return System.getenv("HOME") ?: error("\$HOME is not defined")
 }
