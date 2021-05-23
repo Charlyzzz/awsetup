@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.5.0"
     kotlin("plugin.serialization") version "1.5.0"
-//    id("org.mikeneck.graalvm-native-image") version "1.4.0"
     id("com.palantir.graal") version "0.7.2"
 
     application
@@ -37,33 +36,19 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
 }
 
+val binaryName = "awsetup"
+
 graal {
     graalVersion("21.1.0")
     javaVersion("11")
-    outputName("awsetup")
+    outputName(binaryName)
     mainClass(appMain)
     option("--no-fallback")
 }
 
-//nativeImage {
-//    graalVmHome = System.getenv("JAVA_HOME")
-//    buildType {
-//        it.executable(appMain)
-//    }
-//    executableName = "awsetup"
-//    outputDirectory = file("$buildDir/bin")
-//    arguments(
-//        "--no-fallback",
-//        "--enable-all-security-services",
-//        "--report-unsupported-elements-at-runtime"
-//    )
-//}
-
-tasks.withType<Jar> {
-    manifest {
-        attributes["Main-Class"] = application.mainClass
-    }
-    configurations["compileClasspath"].forEach { file: File ->
-        from(zipTree(file.absoluteFile))
-    }
+tasks.register<Zip>("release") {
+    dependsOn("nativeImage")
+    archiveFileName.set("release.zip")
+    destinationDirectory.set(layout.buildDirectory.dir("dist"))
+    from(layout.buildDirectory.file("graal/$binaryName"))
 }
