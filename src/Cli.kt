@@ -1,10 +1,15 @@
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import kotlin.io.path.deleteIfExists
 
 class Cli : CliktCommand() {
-    override fun run() = Unit
+    private val versionOpt by option("--version").flag()
+
+    override fun run() {
+        if (versionOpt) println(version)
+    }
 }
 
 class ListProfiles : CliktCommand(name = "list", help = "list available profiles") {
@@ -42,9 +47,19 @@ class Remove : CliktCommand(name = "remove", help = "removes AWSetup changes") {
     }
 }
 
-class Version() : CliktCommand(name = "version", help = "prints CLI version") {
+class Version : CliktCommand(name = "version", help = "prints CLI version") {
     override fun run() {
         println(version)
     }
 }
 
+class CurrentProfile : CliktCommand(name = "current", help = "prints current profile") {
+    override fun run() {
+        AwsConfig().toConfig().defaultProfile()?.let { awsProfile ->
+            val config = Config.loadFromFile()
+            config.profiles.find { it.sameCredentials(awsProfile) }?.also {
+                println(it.name)
+            } ?: println("profile not present in config. Try running 'import' command first")
+        } ?: println("no profile set")
+    }
+}

@@ -4,7 +4,7 @@ fun parseIni(fileContent: String): List<Section> {
     val sectionRegex = Regex("""\[(.+)]""")
     val propertyRegex = Regex("""(.+)\s*=\s*(.+)""")
     return fileContent.lineSequence().fold(ParseResult.empty) { resultSoFar, line ->
-        if (line.isEmpty())
+        if (line.isEmpty() || line.startsWith("#"))
             return@fold resultSoFar
         sectionRegex.matchEntire(line)?.let {
             val (sectionName) = it.destructured

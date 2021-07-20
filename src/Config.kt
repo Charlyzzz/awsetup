@@ -18,8 +18,10 @@ data class Config(
         file.writeText(configJson)
     }
 
+    fun defaultProfile(): Profile? = profiles.find { it.name == "default" }
+
     companion object {
-        val file: File = configFilePath.toFile()
+        private val file: File = configFilePath.toFile()
 
         fun loadFromFile(): Config {
             if (!file.exists()) {
@@ -42,6 +44,9 @@ value class SecretString(private val s: String) {
 
 @Serializable
 data class Profile(val name: String, val key: SecretString, val secret: SecretString) {
+    fun sameCredentials(profile: Profile): Boolean =
+        key == profile.key && secret == profile.secret
+
     companion object {
         private const val AWS_KEY_NAME = "aws_access_key_id"
         private const val AWS_SECRET_NAME = "aws_secret_access_key"

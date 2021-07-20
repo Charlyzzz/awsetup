@@ -9,6 +9,7 @@ fun main(args: Array<String>) =
             SetProfile(),
             ImportProfiles(),
             Remove(),
-            Version()
+            Version(),
+            CurrentProfile()
         )
         .main(args)

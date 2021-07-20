@@ -11,7 +11,7 @@ plugins {
 group = "com.charlyzzz"
 version = "0.1"
 
-val appMain = "MainKt"
+val appMain = "HashKt"
 
 repositories {
     mavenCentral()
@@ -20,6 +20,7 @@ repositories {
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 }
 
 kotlin.sourceSets["main"].kotlin.srcDirs("src")
@@ -44,6 +45,7 @@ graal {
     outputName(binaryName)
     mainClass(appMain)
     option("--no-fallback")
+    option("-H:ReflectionConfigurationFiles=/Users/charlyzzz/Documents/Kotlin/awsetup/configs/reflect.json")
 }
 
 tasks.register<Zip>("release") {
